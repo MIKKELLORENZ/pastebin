@@ -5,13 +5,11 @@ A modern, self-hosted pastebin application built with Flask and Tailwind CSS. Sh
 ## Features
 
 - **Text & File Sharing** - Share code snippets, text, and upload multiple files
+- **Drag & Drop** - Easy file uploads with progress tracking
 - **Syntax Highlighting** - Automatic code highlighting with language detection
 - **Responsive Design** - Works seamlessly on desktop and mobile devices
-- **Bulk Operations** - Select multiple items for download or deletion
 - **Search & Filter** - Find pastes by content, filename, or date range
 - **File Previews** - Preview images, videos, PDFs, and code files
-- **Drag & Drop** - Easy file uploads with progress tracking
-- **File System Monitoring** - Automatic cleanup of orphaned database entries
 - **Cross-Platform** - Supports Windows, Linux, and macOS with platform-specific optimizations
 - **Database Maintenance** - Built-in tools for cleaning orphaned entries and checking file integrity
 
@@ -22,21 +20,23 @@ A modern, self-hosted pastebin application built with Flask and Tailwind CSS. Sh
 
 The application features a simple one-step setup where you choose where to store uploaded files.
 
-### Syntax Highlighting
-![Code Syntax Highlighting](screenshots/pastebin_img_2.jpg)
-
-Automatic syntax highlighting for code files with language detection and modal previews.
-
 ### Application Overview
 ![Main Interface](screenshots/pastebin_img_3.jpg)
 
 Clean, modern interface with card-based layout, search functionality, and bulk operations.
 
+### Syntax Highlighting
+![Code Syntax Highlighting](screenshots/pastebin_img_2.jpg)
+
+Automatic syntax highlighting for code files with language detection and modal previews.
+
+
+
 ## Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/MIKKELLORENZ/pastebin
    cd pastebin
    ```
 
