@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-2xl sm:text-4xl font-bold mb-6 sm:mb-8 text-center bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+    Pastebin
+  </h1>
+
+  <!-- SEARCH & FILTERS -->
+  <div class="max-w-2xl mx-auto mb-6 sm:mb-8">
+    <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      <input id="searchBox"
+             type="text"
+             placeholder="Search pastes..."
+             value="{{ q }}"
+             class="flex-1 bg-gray-800 border border-gray-700 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base" />
+      
+      <div class="w-full sm:w-1/4">
+        <input id="dateRange"
+               type="text"
+               placeholder="Date range"
+               readonly
+               class="w-full bg-gray-800 border border-gray-700 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-center text-xs sm:text-sm" />
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW-PASTE FORM -->
+  <div class="max-w-2xl mx-auto mb-4">
+    <form method="post" action="{{ url_for('paste') }}" enctype="multipart/form-data"
+          class="bg-gradient-to-br from-gray-800 to-gray-900 p-4 sm:p-8 rounded-2xl shadow-2xl border border-gray-700 space-y-4 sm:space-y-6"
+          id="pasteForm">
+      <div id="dropZone" class="rounded-xl p-1 transition-colors">
+        <textarea name="content" rows="6" placeholder="Paste your text or Drag'n Drop files"
+                  class="w-full bg-gray-900 border border-gray-700 p-3 sm:p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none text-sm sm:text-base"></textarea>
+        
+        <div class="mt-4 text-center text-gray-400 desktop-only hidden sm:block">
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <label class="text-gray-300 font-medium text-sm sm:text-base">Upload Files:</label>
+          <input type="file" name="files" multiple id="fileInput" accept="*/*"
+                 class="flex-1 text-gray-300 text-xs sm:text-sm file:mr-2 sm:file:mr-4 file:py-2 file:px-2 sm:file:px-4 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:cursor-pointer hover:file:bg-blue-700 transition-all file:text-xs sm:file:text-sm" />
+        </div>
+        
+        <!-- File Size Display -->
+        <div id="fileSizeInfo" class="hidden bg-gray-900 p-3 rounded-lg">
+          <div class="text-sm text-gray-300 mb-2">Selected Files:</div>
+          <div id="fileList" class="space-y-1 text-xs text-gray-400 max-h-32 overflow-y-auto"></div>
+          <div class="mt-2 pt-2 border-t border-gray-700">
+            <span class="text-sm text-gray-300">Total Size: <span id="totalSize" class="font-medium text-blue-400">0 B</span></span>
+          </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div id="uploadProgress" class="hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-300">Uploading...</span>
+            <span id="progressPercent" class="text-sm text-blue-400">0%</span>
+          </div>
+          <div class="w-full bg-gray-700 rounded-full h-2">
+            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <button type="submit" id="submitBtn"
+                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 text-sm sm:text-base">
+          <span class="submit-text">Create Paste</span>
+          <span class="submit-spinner hidden">
+            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 sm:h-5 sm:w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Uploading...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- BULK ACTIONS -->
+  <div id="bulkActions" class="mb-8 sm:mb-12 hidden">
+    <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
+      <!-- Main bar - clickable to expand -->
+      <div id="bulkActionBar" class="p-3 sm:p-4 cursor-pointer hover:bg-gray-750 transition-colors">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <span class="text-gray-300 text-sm sm:text-base"><span id="selectedCount">0</span> items selected</span>
+            <svg id="expandArrow" class="w-4 h-4 text-gray-400 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="flex flex-wrap gap-1 sm:gap-2">
+            <button id="bulkDownload" class="bg-green-600 hover:bg-green-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors">
+              Download
+            </button>
+            <button id="bulkDelete" class="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors">
+              Delete
+            </button>
+            <button id="clearSelection" class="bg-gray-600 hover:bg-gray-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Expandable selected list -->
+      <div id="selectedList" class="hidden border-t border-gray-700">
+        <div class="p-3 sm:p-4">
+          <h4 class="text-sm font-medium text-gray-300 mb-2">Selected Items:</h4>
+          <div id="selectedItems" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS GRID -->
+  <div id="pasteList">
+    {% include "_pastes.html" %}
+  </div>
+  
+  <!-- PAGINATION -->
+  <div id="pagination">
+    {% include "_pagination.html" %}
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
+  <div class="bg-gray-800 rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-600">
+    <div class="flex justify-between items-center p-4 sm:p-6 border-b border-gray-700">
+      <h3 id="modalTitle" class="text-lg sm:text-xl font-semibold text-gray-100 truncate mr-4"></h3>
+      <button id="closeModal" class="text-gray-400 hover:text-gray-200 text-xl sm:text-2xl flex-shrink-0">&times;</button>
+    </div>
+    <div id="modalContent" class="p-4 sm:p-6 overflow-auto max-h-[60vh] sm:max-h-[70vh] text-sm sm:text-base"></div>
+    <div id="modalActions" class="p-4 sm:p-6 pt-4 border-t border-gray-700 flex flex-wrap gap-2 justify-end"></div>
+  </div>
+</div>
+{% endblock %}

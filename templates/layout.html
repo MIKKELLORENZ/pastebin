@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pastebin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>hljs.highlightAll();</script>
+  </head>
+  <body class="bg-gray-900 text-gray-200 antialiased min-h-screen">
+    <!-- Hamburger Menu Button -->
+    <div class="fixed top-4 right-4 z-50">
+      <button id="hamburgerBtn" class="bg-gray-800 hover:bg-gray-700 p-2 sm:p-3 rounded-full shadow-lg border border-gray-600 transition-all hover:scale-110">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
+      <div class="bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-600 shadow-2xl">
+        <div class="p-4 sm:p-6 border-b border-gray-700">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-100">Settings</h3>
+            <button id="closeSettingsModal" class="text-gray-400 hover:text-gray-200 text-xl sm:text-2xl transition-colors">&times;</button>
+          </div>
+          <p class="text-gray-400 mt-2 text-sm sm:text-base">Manage your upload directory</p>
+        </div>
+        
+        <div class="p-4 sm:p-6">
+          <!-- Current Path Display -->
+          <div class="bg-gray-900 p-3 sm:p-4 rounded-xl mb-4 sm:mb-6">
+            <p class="text-sm text-gray-400 mb-2">Current Upload Directory:</p>
+            <code id="currentPath" class="text-xs sm:text-sm text-blue-400 bg-gray-800 px-2 sm:px-3 py-2 rounded-lg block break-all">Loading...</code>
+          </div>
+          
+          <!-- Maintenance Section -->
+          <div class="bg-gray-900 p-3 sm:p-4 rounded-xl mb-4 sm:mb-6">
+            <p class="text-sm text-gray-400 mb-3">Database Maintenance:</p>
+            <button id="cleanupBtn" class="bg-orange-600 hover:bg-orange-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Clean Up Orphaned Entries
+            </button>
+            <p class="text-xs text-gray-500 mt-2">Remove database entries for files that no longer exist in storage</p>
+          </div>
+          
+          <!-- Path Selection -->
+          <div class="space-y-4">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input type="text" id="selectedPath" placeholder="Select a new folder..." readonly
+                     class="flex-1 bg-gray-900 border border-gray-700 p-3 sm:p-4 rounded-xl text-gray-300 cursor-not-allowed text-sm">
+              <button id="browseBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-medium transition-all text-sm sm:text-base">
+                Browse
+              </button>
+            </div>
+            
+            <!-- Directory Browser -->
+            <div id="directoryBrowser" class="hidden bg-gray-900 border border-gray-700 rounded-xl">
+              <div class="p-3 sm:p-4 border-b border-gray-700 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                <button id="parentDirBtn" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-none">
+                  ← Back
+                </button>
+                <input type="text" id="pathInput" class="flex-1 bg-gray-800 border border-gray-600 px-3 py-2 rounded-lg text-xs sm:text-sm text-gray-300 order-2 sm:order-none" 
+                       placeholder="Or type path directly..." />
+                <button id="goToPathBtn" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs sm:text-sm order-3 sm:order-none">Go</button>
+                <button id="closeBrowserBtn" class="text-gray-400 hover:text-gray-200 text-lg sm:text-xl self-end sm:self-center order-0 sm:order-none">×</button>
+              </div>
+              <div class="p-3 border-b border-gray-700 bg-gray-800">
+                <span id="currentBrowsePath" class="text-xs sm:text-sm text-gray-400 font-mono break-all"></span>
+              </div>
+              <div id="directoryList" class="max-h-60 sm:max-h-80 overflow-y-auto">
+                <!-- Directory items will be loaded here -->
+              </div>
+              <div class="p-3 sm:p-4 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
+                <span class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">Browse entire filesystem • Select any writable folder</span>
+                <button id="selectCurrentBtn" class="bg-green-600 hover:bg-green-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                  Select This Folder
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-4 sm:p-6 pt-4 border-t border-gray-700 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
+          <button id="cancelSettings" class="bg-gray-600 hover:bg-gray-700 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-colors text-sm sm:text-base">
+            Cancel
+          </button>
+          <button id="saveSettings" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center p-4">
+      <div class="bg-gray-800 rounded-xl p-6 sm:p-8 text-center max-w-sm w-full mx-4">
+        <svg class="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-lg sm:text-xl text-gray-300 mb-2">Processing</p>
+        <p id="loadingMessage" class="text-xs sm:text-sm text-gray-400">Please wait while we update your settings...</p>
+      </div>
+    </div>
+
+    <!-- Bulk Delete Confirmation Modal -->
+    <div id="bulkDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-2 sm:p-4">
+      <div class="bg-gray-800 rounded-2xl max-w-md w-full mx-4 border border-red-600 shadow-2xl">
+        <div class="p-4 sm:p-6 border-b border-gray-700 bg-red-900/20">
+          <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"/>
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <h3 class="text-lg sm:text-xl font-bold text-red-400">Confirm Bulk Delete</h3>
+          </div>
+        </div>
+        
+        <div class="p-4 sm:p-6">
+          <div class="mb-4">
+            <p class="text-gray-300 mb-2">You are about to delete <span id="deleteCount" class="font-bold text-red-400">0</span> items permanently.</p>
+          
+          </div>
+          
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Type <span class="font-bold text-red-400">DELETE</span> to confirm:
+            </label>
+            <input type="text" id="deleteConfirmInput" 
+                   class="w-full bg-gray-900 border border-gray-700 focus:border-red-500 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center font-mono text-lg tracking-wider"
+                   autocomplete="off" />
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="cancelBulkDelete" class="flex-1 bg-gray-600 hover:bg-gray-700 px-4 py-3 rounded-xl font-medium transition-colors text-sm sm:text-base">
+              Cancel
+            </button>
+            <button id="confirmBulkDelete" disabled
+                    class="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 disabled:cursor-not-allowed px-4 py-3 rounded-xl font-medium transition-colors text-sm sm:text-base">
+              Delete Items
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container mx-auto px-3 sm:px-6 py-4 sm:py-8 max-w-none">
+      {% block content %}{% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </body>
+</html>

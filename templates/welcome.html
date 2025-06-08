@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to Pastebin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  </head>
+  <body class="bg-gray-900 text-gray-200 antialiased min-h-screen flex items-center justify-center p-4">
+    <!-- Welcome Modal -->
+    <div class="bg-gray-800 rounded-2xl max-w-2xl w-full border border-gray-600 shadow-2xl">
+      <div class="p-6 sm:p-8 text-center border-b border-gray-700">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          Welcome to Pastebin
+        </h1>
+        <p class="text-gray-400 text-sm sm:text-base">Let's set up where your files will be stored on the server</p>
+      </div>
+      
+      <div class="p-6 sm:p-8">
+        <!-- Current Selection -->
+        <div class="mb-6">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="selectedPath" placeholder="Select a folder on the server..." readonly
+                   class="flex-1 bg-gray-900 border border-gray-700 p-3 sm:p-4 rounded-xl text-gray-300 cursor-not-allowed text-sm break-all">
+            <button id="browseBtn" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-medium transition-all text-sm sm:text-base">
+              Browse
+            </button>
+          </div>
+        </div>
+        
+        <!-- Directory Browser -->
+        <div id="directoryBrowser" class="hidden bg-gray-900 border border-gray-700 rounded-xl mb-6">
+          <div class="p-3 sm:p-4 border-b border-gray-700 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+            <button id="parentDirBtn" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-none">
+              ← Back
+            </button>
+            <input type="text" id="pathInput" class="flex-1 bg-gray-800 border border-gray-600 px-3 py-2 rounded-lg text-xs sm:text-sm text-gray-300 order-2 sm:order-none" 
+                   placeholder="Or type path directly..." />
+            <button id="goToPathBtn" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs sm:text-sm order-3 sm:order-none">Go</button>
+            <button id="closeBrowserBtn" class="text-gray-400 hover:text-gray-200 text-lg sm:text-xl self-end sm:self-center order-0 sm:order-none">×</button>
+          </div>
+          <div class="p-3 border-b border-gray-700 bg-gray-800">
+            <span id="currentBrowsePath" class="text-xs sm:text-sm text-gray-400 font-mono break-all"></span>
+          </div>
+          <div id="directoryList" class="max-h-60 sm:max-h-80 overflow-y-auto">
+            <!-- Directory items will be loaded here -->
+          </div>
+          <div class="p-3 sm:p-4 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
+            <span class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">Choose any writable directory</span>
+            <button id="selectCurrentBtn" class="bg-green-600 hover:bg-green-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+              Select This Folder
+            </button>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex gap-4">
+          <button id="continueBtn" disabled
+                  class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-4 sm:px-6 py-3 sm:py-4 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-green-600 disabled:hover:to-emerald-600 text-sm sm:text-base">
+            Continue to Pastebin
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center p-4">
+      <div class="bg-gray-800 rounded-xl p-6 sm:p-8 text-center max-w-sm w-full mx-4">
+        <svg class="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-blue-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-lg sm:text-xl text-gray-300 mb-2">Setting up Pastebin</p>
+        <p id="loadingMessage" class="text-xs sm:text-sm text-gray-400">Configuring your upload directory...</p>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='welcome.js') }}"></script>
+  </body>
+</html>

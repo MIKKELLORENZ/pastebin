@@ -1,0 +1,21 @@
+{% if last_page > 1 %}
+  <nav class="flex justify-center items-center gap-2 sm:gap-3 mt-8 sm:mt-12">
+    {% if page > 1 %}
+      <a href="{{ url_for('index', page=page-1, q=q) }}"
+         class="px-3 sm:px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 transition-all font-medium text-xs sm:text-sm">
+        &laquo; <span class="hidden sm:inline">Previous</span><span class="sm:hidden">Prev</span>
+      </a>
+    {% endif %}
+    
+    <div class="px-4 sm:px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-xs sm:text-sm">
+      {{ page }} of {{ last_page }}
+    </div>
+    
+    {% if page < last_page %}
+      <a href="{{ url_for('index', page=page+1, q=q) }}"
+         class="px-3 sm:px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 transition-all font-medium text-xs sm:text-sm">
+        <span class="hidden sm:inline">Next</span><span class="sm:hidden">Next</span> &raquo;
+      </a>
+    {% endif %}
+  </nav>
+{% endif %}
