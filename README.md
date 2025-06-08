@@ -1,6 +1,6 @@
 # Pastebin
 
-A modern, self-hosted pastebin application built with Flask and Tailwind CSS. Share text snippets and files with syntax highlighting, bulk operations, file system monitoring, and a responsive design.
+A modern, self-hosted code & multimedia pastebin application (🖼️🎞️📄🎵). Share text snippets and files with syntax highlighting, bulk operations, file system monitoring, and a responsive design. Perfect for your homemade / DIY NAS server 👨‍💻.
 
 ## Features
 
